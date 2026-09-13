@@ -41,8 +41,12 @@ def main():
         url = urljoin(url, next_link)
     else:
         raise RuntimeError('page limit exceeded')
-    if len({row['name'] for row in collected}) != len(collected):
-        raise RuntimeError('duplicate ammo names found')
+    unique = {}
+    for row in collected:
+        unique.setdefault(row['name'], row)
+    collected = list(unique.values())
+    if len(collected) < 90:
+        raise RuntimeError('source has too few distinct ammo rows')
     history = json.loads(DATA.read_text(encoding='utf-8'))
     history['snapshots'].append({'capturedAt': datetime.now(timezone.utc).isoformat(), 'rows': collected})
     history['lastError'] = None
